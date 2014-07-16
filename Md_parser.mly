@@ -15,55 +15,7 @@
       li : Md_ast.li_content list;
   }
 
-  let make_ol_tree l : Md_ast.t =
-    Printf.printf "=%d\n" (List.length l);
-    let id = ref 0 in
-    let of_elt ?parent (spaces,li) = {
-       id = !id;
-       li;
-       spaces;
-       parent;
-       children = [];
-    } in
-    Printf.printf "#%d\n" !id;
-    let root = of_elt (List.hd l) in
-    let rec put_in_tree root node =
-      let node' = of_elt ~parent:root node in
-      Printf.printf "root:%d:%d\n" root.spaces node'.spaces;
-      let is_same_space = root.spaces = node'.spaces in
-      if is_same_space || List.length root.children = 0 then begin
-        let root, node' =
-          if is_same_space then begin match root.parent with
-           | Some p ->
-                   Printf.printf "root:parent:(#%d:%d)\n" p.id p.spaces;
-                   Printf.printf "root:parent:put:(#%d,%d):(#%d:%d)\n" p.id p.spaces node'.id node'.spaces;
-                   p, of_elt ~parent:p node
-           | None ->
-                   Printf.printf "root:put:(#%d:%d):(#%d:%d)\n" root.id root.spaces node'.id node'.spaces;
-                   root, node'
-          end else begin
-            Printf.printf "root:put:(#%d:%d):(#%d:%d)\n" root.id root.spaces node'.id node'.spaces;
-            root, node'
-          end
-        in
-        root.children <- [node'] @ root.children;
-        true
-      end else begin
-        List.exists (fun root -> put_in_tree root node) root.children
-      end
-    in
-    List.iter (fun node ->  incr id; Printf.printf "#%d\n" !id; ignore (put_in_tree root node)) (List.tl l);
-    let rec ol_of_tree root =
-      [`li (root.li @
-        (if List.length root.children > 0 then
-          List.map
-            (fun root ->
-              (`ol (ol_of_tree root)))
-            (List.rev root.children)
-        else []))]
-    in `ol (ol_of_tree root)
-
-  let make_ul_tree l : Md_ast.t =
+  let make_tree make_node l : Md_ast.t =
     Printf.printf "=%d\n" (List.length l);
     let id = ref 0 in
     let of_elt ?parent (spaces,li) = {
@@ -101,15 +53,18 @@
       end
     in
     List.iter (fun node ->  incr id; Printf.printf "#%d\n" !id; ignore (put_in_tree root node)) (l);
-    let rec ul_of_tree root =
+    let rec of_tree root =
       `li (root.li @
         (if List.length root.children > 0 then
           List.map
             (fun root ->
-              (`ul [ul_of_tree root]))
+              (make_node [of_tree root]))
             (List.rev root.children)
         else []))
-    in `ul (List.map ul_of_tree (List.rev root.children))
+    in make_node (List.map of_tree (List.rev root.children))
+
+  let make_ul_tree = make_tree (fun l -> `ul l)
+  let make_ol_tree = make_tree (fun l -> `ol l)
 
 %}
 %token <string> P
