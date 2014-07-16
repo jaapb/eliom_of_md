@@ -149,4 +149,8 @@ rule next_token = parse
     {
       P (remove_bs idt)
     }
+  | _ as c
+    {
+      Char c
+    }
   | eof	{ EOF }
