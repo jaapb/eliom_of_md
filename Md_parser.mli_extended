@@ -1,0 +1,5 @@
+val is_eof :
+  unit -> bool
+
+val reset :
+  unit -> unit
