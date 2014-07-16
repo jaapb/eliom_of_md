@@ -222,10 +222,10 @@ ol_next:
   |                              { [] }
   |        ol_li                 { [(0,$1)] }
   |        ol_li Sep             { [(0,$1)] }
-  |        ol_li Sep ul_next     { [(0,$1)] @ $3 }
+  |        ol_li Sep ol_next     { [(0,$1)] @ $3 }
   |        ol_li Sep             { [(0,$1)] }
   | spaces ol_li Sep             { [($1,$2)] }
-  | spaces ol_li Sep ul_next     { [($1,$2)] @ $4 }
+  | spaces ol_li Sep ol_next     { [($1,$2)] @ $4 }
   | spaces                       { [] }
 ;
 ol_li:
