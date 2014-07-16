@@ -31,7 +31,7 @@ let escaped_char =
   ('\\' ('`' | '[' | ']' | '(' | ')' | '!' | '>' | '-' | '*' | '=' | '_' | '#'))
 
 let basic_char =
-  ['\\' '<' '?' 'a'-'z' 'A'-'Z' '/' ':' '&' '_' '-' '"' ''' ',' ';' '{' '}']
+  ['\\' '<' '?' 'a'-'z' 'A'-'Z' '/' ':' '&' '"' ''' ',' ';' '{' '}']
 
 let default_char =
   (basic_char)
@@ -43,7 +43,7 @@ let ident_char =
   (default_char | '\\' default_char | escaped_char)
 
 let ident_suffix_char =
-  ['.' ' ' '\t' '>' '#' '=' '0'-'9']
+  ['-' '_' '.' ' ' '\t' '>' '#' '=' '0'-'9']
 
 let ident =
   ident_char (ident_suffix_char | '\\' ident_suffix_char | ident_char)*
