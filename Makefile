@@ -224,12 +224,4 @@ clean:
 	-rm -rf ${ELIOM_CLIENT_DIR} ${ELIOM_SERVER_DIR} ${LIBDIR}
 
 distclean: clean
-	make -C test/ distclean
 	-rm -rf $(DEPSDIR) .depend
-
-##----------------------------------------------------------------------
-## Test
-
-test.byte: all reinstall
-	make -C test/ test.byte
-
