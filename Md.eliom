@@ -327,6 +327,7 @@ let create_editor_tab () =
   let create_tab ?(selected = false) ~cl text =
     li [
       Raw.a ~a:[
+        a_tabindex (-1);
         a_href (uri_of_string (fun () -> "#"));
         a_class ["tab"; cl; (if selected then "selected" else "")];
       ] [
