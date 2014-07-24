@@ -225,3 +225,9 @@ clean:
 
 distclean: clean
 	-rm -rf $(DEPSDIR) .depend
+
+##----------------------------------------------------------------------
+## Examples
+
+md_editor: reinstall
+	make -C examples/md_editor test.byte -j
