@@ -211,13 +211,6 @@
     | Char v -> print_ctag "Char" v
     | Underl v -> print_tag "Underl" v
 
-  let debug = ref false
-
-  let print_debug lexbuf =
-    while not !eof do
-      print_token (Md_lexer.next_token lexbuf);
-    done
-
   let parse lexbuf =
     Parsing.set_trace true;
     let rec aux rl =
@@ -237,8 +230,6 @@
     in aux []
 
   let lex_and_parse lexbuf =
-    if !debug then
-      print_debug lexbuf;
     parse lexbuf
 
   let lex_and_parse_file file =
@@ -257,5 +248,17 @@
 
   let from_file file =
     to_eliom (lex_and_parse_file file)
+
+  module Debug = struct
+    let pretty_print lexbuf =
+      while not !eof do
+        print_token (Md_lexer.next_token lexbuf);
+      done
+
+    let pp = pretty_print
+
+    let from_string text =
+      pp (Lexing.from_string text)
+  end
 
 }}
