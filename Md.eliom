@@ -262,3 +262,125 @@
   end
 
 }}
+
+{client{
+  module C = struct
+    let contains elt' cls =
+      elt'##classList##contains(Js.string cls) = Js._true
+
+    let add elt' cls =
+      elt'##classList##add(Js.string cls)
+
+    let remove elt' cls =
+      elt'##classList##remove(Js.string cls)
+  end
+
+  let get_from_dom ~from q =
+    Js.Opt.case (from##querySelector(Js.string q))
+      (fun () -> failwith "elt not found")
+      (fun elt' -> elt')
+
+  let get_preview_tab ~from () =
+    get_from_dom ~from ".preview"
+
+  let get_edit_tab ~from () =
+    get_from_dom ~from ".edit"
+
+  let get_preview_area ~from () =
+    get_from_dom ~from ".preview-area"
+
+  let get_edit_area ~from () =
+    get_from_dom ~from ".edit-area"
+
+  let get_edit_value ~from () =
+    Js.to_string (Js.Unsafe.coerce (get_from_dom ~from ".edit-area textarea"))##value
+
+  let is_preview elt' =
+    C.contains elt' "preview"
+
+  let is_edit elt' =
+    C.contains elt' ".edit"
+
+  let hide elt' =
+    elt'##style##display <- Js.string "none"
+
+  let show elt' =
+    elt'##style##display <- Js.string "block"
+
+  let removeChildren elt' =
+    List.iter
+      (Dom.removeChild elt')
+      (Dom.list_of_nodeList (elt'##childNodes))
+
+  let appendChildren elt' =
+    List.iter (Dom.appendChild elt')
+
+  let replaceChildren elt' nodes =
+    removeChildren elt';
+    appendChildren elt' nodes
+}}
+
+let default_textarea () =
+  Raw.textarea ~a:[a_placeholder "Enter some markdown here."] (pcdata "")
+
+let create_editor_tab () =
+  let create_tab ?(selected = false) ~cl text =
+    li [
+      Raw.a ~a:[
+        a_href (uri_of_string (fun () -> "#"));
+        a_class ["tab"; cl; (if selected then "selected" else "")];
+      ] [
+        pcdata text;
+      ]
+    ]
+  in
+  ul ~a:[a_class ["tab-bar"]] [
+    create_tab ~selected:true ~cl:"edit" "Edit";
+    create_tab ~cl:"preview" "Preview";
+  ]
+
+let create_editor ?(tarea = default_textarea) ?(attr = []) () =
+  let editor =
+    div ~a:(a_class ["md-editor"]::attr) [
+      create_editor_tab ();
+      div ~a:[a_class ["edit-area"]] [
+        tarea ();
+      ];
+      div ~a:[a_class ["preview-area"]] [
+      ];
+    ]
+  in
+  ignore {unit{
+    let from = To_dom.of_element %editor in
+    let listen elt' =
+      Lwt.async (fun () ->
+        Lwt_js_events.clicks elt' (fun e _ ->
+          let edit' = get_edit_area ~from () in
+          let preview' = get_preview_area ~from () in
+          if not (C.contains elt' "selected") then begin
+            if is_preview elt' then begin
+              C.remove (get_edit_tab ~from ()) "selected";
+              C.add elt' "selected";
+              hide edit';
+              replaceChildren
+                preview'
+                (List.map To_dom.of_element (from_string (get_edit_value ~from ())));
+              show preview';
+            end else begin
+              C.remove (get_preview_tab ~from ()) "selected";
+              C.add elt' "selected";
+              show edit';
+              hide preview';
+            end
+          end;
+          Dom.preventDefault e;
+          Dom_html.stopPropagation e;
+          Lwt.return ()
+        );
+      )
+    in
+    List.iter
+      (listen)
+      (Dom.list_of_nodeList (from##querySelectorAll(Js.string ".tab")))
+  }};
+  editor
