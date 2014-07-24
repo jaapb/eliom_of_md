@@ -7,3 +7,16 @@
 *.cmx
 *.cmxs
 *.cmxa
+
+.depend
+_deps/
+_server/
+_client/
+META
+
+.*.sw*
+
+Md_lexer.ml
+Md_lexer.mli
+Md_parser.ml
+Md_parser.mli
