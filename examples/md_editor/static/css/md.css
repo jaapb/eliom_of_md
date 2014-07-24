@@ -1,0 +1,74 @@
+* {
+    font-family: sans-serif;
+}
+
+.md-editor * {
+  font-size: 14px;
+  box-sizing: border-box;
+}
+.md-editor {
+  border-radius: 3px;
+  border: 1px solid rgb(221, 221, 221);
+}
+
+.md-editor .tab-bar {
+  background-color: rgb(247, 247, 247);
+  border-bottom: 1px solid rgb(221, 221, 221);
+  margin: 0;
+  padding: 0;
+  padding-top: 10px;
+  padding-left: 10px;
+  padding-bottom: 1px;
+}
+.md-editor .tab-bar li {
+  border-radius: 3px;
+  display: inline-block;
+}
+.md-editor a.tab {
+  display: inline-block;
+}
+.md-editor a.tab.selected {
+  border: 1px solid rgb(221, 221, 221);
+  border-bottom: 0;
+  background-color: white;
+}
+.md-editor a.tab {
+  padding: 12px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  text-decoration: none;
+}
+.md-editor a.tab:visited {
+  color: black;
+}
+
+.md-editor .preview-area, .md-editor .edit-area {
+  background-color: white;
+  padding: 10px 10px 10px;
+  max-height: 400px;
+  width: 100%;
+}
+.md-editor .preview-area {
+  overflow-y: scroll;
+}
+.md-editor .edit-area textarea {
+  margin: 0;
+  padding: 10px;
+  min-height: 100px;
+  max-height: 380px;
+  background-color: rgb(247, 247, 247);
+  width: 100%;
+  resize: vertical;
+  border-radius: 3px;
+  border: 1px solid #ddd;
+}
+.md-editor .edit-area textarea:focus {
+  background-color: white;
+}
+
+.md-editor .preview-area {
+  display: none;
+}
+
+.md-editor .edit-area {
+}
