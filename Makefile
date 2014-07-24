@@ -44,7 +44,7 @@ PARSER_FILE := Md_parser
 ## General
 
 .PHONY: all byte opt
-all: parser lexer byte $(OPT_RULE)
+all: byte $(OPT_RULE)
 byte:: $(LIBDIR)/${PKG_NAME}.server.cma $(LIBDIR)/${PKG_NAME}.client.cma
 opt:: $(LIBDIR)/${PKG_NAME}.server.cmxs
 lexer:: $(LEXER_FILE).ml
@@ -198,8 +198,8 @@ endif
 
 DEPSDIR := _deps
 
-.depend: $(patsubst %,$(DEPSDIR)/%.server,$(SERVER_FILES)) $(patsubst %,$(DEPSDIR)/%.client,$(CLIENT_FILES))
-	cat $^ > $@
+.depend: lexer parser $(patsubst %,$(DEPSDIR)/%.server,$(SERVER_FILES)) $(patsubst %,$(DEPSDIR)/%.client,$(CLIENT_FILES))
+	cat $(patsubst %,$(DEPSDIR)/%.server,$(SERVER_FILES)) $(patsubst %,$(DEPSDIR)/%.client,$(CLIENT_FILES)) > $@
 
 $(DEPSDIR)/%.server: % | $(DEPSDIR)
 	$(ELIOMDEP) -server $(SERVER_INC) $(SERVER_DEP_DIRS) $< > $@
