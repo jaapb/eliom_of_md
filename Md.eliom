@@ -1,14 +1,21 @@
-{shared{
+[%%shared
   open Eliom_lib
   open Eliom_content
-  open Html5
-  open Html5.D
-  open Html5_types
+  open Html
+  open Html.D
+  open Html_types
   open Md_lexer
   open Md_parser
+]
 
+[%%client
+  open Js_of_ocaml
+  open Js_of_ocaml_lwt
+]
+
+[%%shared
   type t = [
-    | `A of Html5_types.flow5_without_interactive
+    | `A of Html_types.flow5_without_interactive
     | `B
     | `Blockquote
     | `Br
@@ -60,12 +67,12 @@
 
   let make_a (v,href) =
     Raw.a ~a:[a_href (Xml.uri_of_string href)] [
-      pcdata v
+      txt v
     ]
 
   let make_pcdata = function
     | `pcdata s ->
-        pcdata s
+        txt s
 
   let make_em cnt =
     em (List.map make_pcdata cnt)
@@ -76,7 +83,7 @@
   let make_code cnt =
     let cls = fst cnt in
     let p = snd cnt in
-    code ~a:[a_class [cls]] [pcdata p]
+    code ~a:[a_class [cls]] [txt p]
 
   let make_pre_content = function
     | `code cnt ->
@@ -92,7 +99,7 @@
     | `code cnt ->
         make_code cnt
     | `pcdata cnt ->
-        pcdata cnt
+        txt cnt
 
   and make_pre cnt =
     pre (List.map make_pre_content cnt)
@@ -131,7 +138,7 @@
     | `h cnt ->
         make_h cnt
     | `pcdata s ->
-        pcdata s
+        txt s
     | `bq cnt ->
         make_bq ~to_eliom_node cnt
     | `ul cnt ->
@@ -187,7 +194,7 @@
     | `code cnt ->
         make_code cnt
     | `pcdata s ->
-        pcdata s
+        txt s
 
   let to_eliom ast : [> t] elt list =
     List.map to_eliom_node ast
@@ -212,7 +219,7 @@
     | Underl v -> print_tag "Underl" v
 
   let parse lexbuf =
-    Parsing.set_trace true;
+    ignore (Parsing.set_trace true);
     let rec aux rl =
       if ((Md_parser.is_eof ())) then begin
         print_endline "eof";
@@ -261,18 +268,18 @@
       pp (Lexing.from_string text)
   end
 
-}}
+]
 
-{client{
+[%%client
   module C = struct
     let contains elt' cls =
-      elt'##classList##contains(Js.string cls) = Js._true
+      elt'##.classList##contains(Js.string cls) = Js._true
 
     let add elt' cls =
-      elt'##classList##add(Js.string cls)
+      elt'##.classList##add(Js.string cls)
 
     let remove elt' cls =
-      elt'##classList##remove(Js.string cls)
+      elt'##.classList##remove(Js.string cls)
   end
 
   let get_from_dom ~from q =
@@ -302,15 +309,15 @@
     C.contains elt' ".edit"
 
   let hide elt' =
-    elt'##style##display <- Js.string "none"
+    elt'##.style##.display := Js.string "none"
 
   let show elt' =
-    elt'##style##display <- Js.string "block"
+    elt'##.style##.display := Js.string "block"
 
   let removeChildren elt' =
     List.iter
       (Dom.removeChild elt')
-      (Dom.list_of_nodeList (elt'##childNodes))
+      (Dom.list_of_nodeList (elt'##.childNodes))
 
   let appendChildren elt' =
     List.iter (Dom.appendChild elt')
@@ -318,10 +325,10 @@
   let replaceChildren elt' nodes =
     removeChildren elt';
     appendChildren elt' nodes
-}}
+]
 
 let default_textarea () =
-  Raw.textarea ~a:[a_placeholder "Enter some markdown here."] (pcdata "")
+  Raw.textarea ~a:[a_placeholder "Enter some markdown here."] (txt "")
 
 let create_editor_tab () =
   let create_tab ?(selected = false) ~cl text =
@@ -331,7 +338,7 @@ let create_editor_tab () =
         a_href (uri_of_string (fun () -> "#"));
         a_class ["tab"; cl; (if selected then "selected" else "")];
       ] [
-        pcdata text;
+        txt text;
       ]
     ]
   in
@@ -351,8 +358,8 @@ let create_editor ?(tarea = default_textarea) ?(attr = []) () =
       ];
     ]
   in
-  ignore {unit{
-    let from = To_dom.of_element %editor in
+  ignore [%client
+    (let from = To_dom.of_element ~%editor in
     let listen elt' =
       Lwt.async (fun () ->
         Lwt_js_events.clicks elt' (fun e _ ->
@@ -382,6 +389,6 @@ let create_editor ?(tarea = default_textarea) ?(attr = []) () =
     in
     List.iter
       (listen)
-      (Dom.list_of_nodeList (from##querySelectorAll(Js.string ".tab")))
-  }};
+      (Dom.list_of_nodeList (from##querySelectorAll(Js.string ".tab"))) : unit)
+  ];
   editor

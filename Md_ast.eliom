@@ -1,4 +1,4 @@
-{shared{
+[%%shared
   open Printf
 
   type pcdata = [
@@ -38,4 +38,4 @@
     | `pre of pre_content list
     | `pcdata of string
   ]
-}}
+]
